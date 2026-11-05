@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reproduction Guide</title>
+<style>
+:root {
+  --bg: #fbfaf7; --text: #1f2328; --muted: #5f6670; --rule: #dcd8cf; --accent: #2f5d8a; --card: #ffffff; --tablehead: #f1eee7; --codebg: #f3f1ec;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #16181c; --text: #e6e6e3; --muted: #a2a8b0; --rule: #33373e; --accent: #8fb6e0; --card: #1d2025; --tablehead: #24282e; --codebg: #23272d; }
+}
+:root[data-theme="dark"] { --bg: #16181c; --text: #e6e6e3; --muted: #a2a8b0; --rule: #33373e; --accent: #8fb6e0; --card: #1d2025; --tablehead: #24282e; --codebg: #23272d; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.55 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 80px; }
+h1 { font-size: 28px; margin: 0 0 6px; }
+h2 { font-size: 21px; margin: 44px 0 8px; padding-top: 12px; border-top: 2px solid var(--rule); }
+h3 { font-size: 16px; margin: 24px 0 6px; color: var(--accent); }
+p { margin: 0 0 12px; }
+.lede { color: var(--muted); }
+code { font: 12.5px/1.4 ui-monospace, Menlo, Consolas, monospace; background: var(--codebg); padding: 1px 4px; border-radius: 3px; }
+pre { font: 12.5px/1.45 ui-monospace, Menlo, Consolas, monospace; background: var(--codebg); padding: 10px 12px; border-radius: 5px; overflow-x: auto; }
+.tablewrap { overflow-x: auto; margin: 8px 0 18px; }
+table { border-collapse: collapse; font-size: 13px; width: 100%; background: var(--card); }
+th, td { border: 1px solid var(--rule); padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: var(--tablehead); white-space: nowrap; }
+td:first-child { white-space: nowrap; font-weight: 600; }
+td code { white-space: nowrap; }
+.toc { background: var(--card); border: 1px solid var(--rule); padding: 12px 18px; border-radius: 6px; }
+.toc a { color: var(--accent); text-decoration: none; }
+.note { border-left: 3px solid var(--accent); padding: 6px 12px; background: var(--card); margin: 10px 0 16px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Reproduction Guide</h1>
+<p class="lede">Companion to <em>Results Write-Up</em>. It goes through the write-up label by label (paragraph labels like 2.2a, tables T&hellip;, figures F&hellip;) and says where each result is computed, which file holds it, and what to edit to change the assumption behind it. Every reference is a line number in a script in <code>tools/</code>, written <code>make_step4.py:316</code> (one line) or <code>make_step4.py:316&ndash;366</code> (a range). The scripts also carry comments starting with <code>Write-up:</code> that point back to the sections below.</p>
+
+<div class="toc">
+<a href="#how">A. How the code is organized, and how to rebuild</a><br>
+<a href="#map">B. Line by line through the write-up</a><br>
+<a href="#review">C. The manual review: before, after, and what it changed</a><br>
+<a href="#knobs">D. Every assumption you might want to change</a><br>
+<a href="#odd">E. Things that are not fully reproducible, and small quirks</a>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="how">A. How the code is organized, and how to rebuild</h2>
+<p>Each step is a script in <code>tools/</code> that writes a Jupyter notebook in the project root; running the notebook produces the step's tables in <code>processed-data/</code>. The code that runs is the text inside each <code>code("""&hellip;""")</code> block of the script, in the same order as in the notebook, so a line number in the script is the place to read or edit. <strong>Edit the script, not the notebook</strong>: regenerating the notebook overwrites hand edits. Printed results (counts, tables) are in the notebook's output under the code that prints them, so "printed at <code>make_step4.py:365</code>" means: open the notebook, find the block containing that line, and read its output.</p>
+<div class="tablewrap"><table>
+<tr><th>Step</th><th>Script</th><th>Notebook it writes</th><th>Produces (in <code>processed-data/</code>)</th></tr>
+<tr><td>3</td><td><code>tools/make_step3.py</code></td><td><code>geography_helpers_processing.ipynb</code></td><td>[3a] ZCTAs (:71&ndash;89), [3b] 2020 CBGs (:91&ndash;107), [3c] counties (:109&ndash;125), [3d] places (:127&ndash;148), block counts (:150&ndash;170), [3b'] 2010 CBGs (:172&ndash;232): total and 21+ population from 2020 Census table P12; 21+ = total minus the under-21 bins (:47, :66)</td></tr>
+<tr><td>1</td><td><code>tools/make_step1.py</code></td><td><code>wslcb_safegraph_locations_processing.ipynb</code></td><td>[1a] WSLCB snapshots and locations (:148&ndash;257), Veraset place history (:309&ndash;332), [1b]/[1c] old placekey list, superseded (:334&ndash;924), [1d] store coordinates and geography (:926&ndash;1088), [1e] approved store labels by month and [1e'] open storefront-months (:1113&ndash;1516), irregularities (:1518&ndash;end)</td></tr>
+<tr><td>1 (review)</td><td><code>tools/build_review_1e.py</code></td><td>(page) <code>review/1e_review_page.html</code></td><td>The manual review page; the verdicts are saved to <code>review/1e_review_verdicts.csv</code></td></tr>
+<tr><td>2</td><td><code>tools/make_step2.py</code></td><td><code>veraset_devices_processing.ipynb</code></td><td>[2ai] <code>devices_with_350days_YYYY</code> (:51&ndash;88), [2aii] <code>devices_with_60days_YYYYQn</code> (:91&ndash;161), sample-restricted visit tables (:207&ndash;285), [2b] <code>home_locations_*</code> (:293&ndash;411). This script is a word-for-word copy of the existing notebook (the first part was written by hand in the notebook, the rest came from <code>tools/step2_cells.py</code>); it was checked to produce identical code but has not been run, so the notebook's outputs are the originals.</td></tr>
+<tr><td>4</td><td><code>tools/make_step4.py</code></td><td><code>dispensary_visits_processing.ipynb</code></td><td>[4ai]/[4aii] home geography (:68&ndash;207), device windows (:209&ndash;267), [4bi]/[4bii] cleaned dispensary visits (:270&ndash;411), checks (:413&ndash;475), [4ci] [4ci'] [4cii] [4ciii] [4ciii'] summary tables and all section 1&ndash;3 charts (:477&ndash;1081)</td></tr>
+<tr><td>5</td><td><code>tools/make_step5.py</code></td><td><code>visits_and_access_processing.ipynb</code></td><td>[5a] home-area shares (:60&ndash;115), [5b] area access (:117&ndash;200), [5ci]/[5cii] device visits and access (:202&ndash;230), [5d] visits by access (:232&ndash;300), checks (:302&ndash;321), charts (:323&ndash;378)</td></tr>
+<tr><td>6</td><td><code>tools/make_step6.py</code></td><td><code>store_coverage_processing.ipynb</code></td><td>[6a] every storefront operating in 2019&ndash;2021, matched or not, and why (:50&ndash;145), [6b] matched vs. missing by county, place type, and place size (:158&ndash;233), bar charts (:248&ndash;372), maps (:374&ndash;442). Needs Steps 1 and 3 only</td></tr>
+<tr><td>Write-up</td><td><code>tools/build_writeup.py</code></td><td>(page) <code>Results Write-Up.html</code></td><td>Copies the current charts from <code>Charts and Figures/</code> into the write-up</td></tr>
+</table></div>
+<p>Rebuild order is Step 3, Step 1, Step 2, Step 4, Step 5, Step 6 (each step reads the tables of the ones before it; Step 6 only needs Steps 1 and 3). From the project root:</p>
+<pre>python3 tools/make_step1.py wslcb_safegraph_locations_processing.ipynb &amp;&amp; python3 tools/run_nb.py wslcb_safegraph_locations_processing.ipynb
+python3 tools/make_step4.py dispensary_visits_processing.ipynb &amp;&amp; python3 tools/run_nb.py dispensary_visits_processing.ipynb
+python3 tools/make_step5.py visits_and_access_processing.ipynb &amp;&amp; python3 tools/run_nb.py visits_and_access_processing.ipynb
+python3 tools/make_step6.py store_coverage_processing.ipynb &amp;&amp; python3 tools/run_nb.py store_coverage_processing.ipynb
+python3 tools/build_writeup.py</pre>
+<p>Steps 4, 5, and 6 take well under a minute each; Step 1 takes a few minutes. Step 2 (<code>python3 tools/make_step2.py veraset_devices_processing.ipynb &amp;&amp; python3 tools/run_nb.py veraset_devices_processing.ipynb</code>) is slow, because it scans all of the raw Veraset data, and only needs rerunning if the sample definitions change. Charts are written to <code>Charts and Figures/</code> every time Steps 4, 5, and 6 run; the write-up carries its own copies (so it works as a single file, offline), refreshed by <code>tools/build_writeup.py</code>. The write-up's numbers and prose are typed in, so after changing an assumption they have to be updated by hand from the tables listed below.</p>
+<p>To look at any output table:</p>
+<pre>import polars as pl
+pl.read_parquet("processed-data/4cii_visit_distributions.parquet").filter(pl.col("period") == "all")</pre>
+
+<!-- ============================================================ -->
+<h2 id="map">B. Line by line through the write-up</h2>
+
+<h3>0.1 Data</h3>
+<div class="tablewrap"><table>
+<tr><th>Label</th><th>What it says</th><th>Where it comes from</th><th>To change it</th></tr>
+<tr><td>0.1a</td><td>The four data sources</td><td>Veraset: <code>raw-data/veraset-visits-wa/month=YYYY-MM/</code>. WSLCB: <code>raw-data/MarijuanaApplicants*.xls</code> and the current list, read at <code>make_step1.py:148&ndash;212</code>; the snapshot dates come from the sheet names, not the file names (:164). Census: <code>make_step3.py</code>, API key read from <code>census_api_key.txt</code>. Outlines: <code>raw-data/SafeGraph-Places-Geometry-2026-10/</code>, read at <code>make_step1.py:1402&ndash;1425</code>.</td><td>A new WSLCB snapshot goes in <code>raw-data/</code> with "MarijuanaApplicants" in its name and a sheet named like "Retailers M-D-YY"; rerun Step 1 onward.</td></tr>
+</table></div>
+
+<h3>0.2 Which visits count as dispensary visits</h3>
+<div class="tablewrap"><table>
+<tr><th>Label</th><th>What it says</th><th>Where it comes from</th><th>To change it</th></tr>
+<tr><td>0.2a</td><td>Why not a placekey list, and why not distance</td><td>The placekey list is [1b] (<code>make_step1.py:334&ndash;667</code>); its problems are documented at :713&ndash;808 (placekeys changing hands) and in the irregularities log (:1560 onward). The 1.7M blank placekeys: printed at <code>make_step1.py:1520</code>. Distances were rejected as a design decision, so there is no code for them.</td><td>&mdash;</td></tr>
+<tr><td>0.2b</td><td>The approval rule (address, name, operating license)</td><td><code>make_step1.py:1113&ndash;1516</code>. The label key is defined at :1220. <b>Address:</b> exact normalized address with the same city, or the same ZIP (<code>by_zip</code>, :1258&ndash;1263); normalization is <code>normalize_address</code> (:67). <b>Name:</b> <code>check_names</code> (:1299&ndash;1321), overlap threshold 0.5 at :1304, the "auto" condition at :1314&ndash;1316, word lists at :1278&ndash;1280, overlap measure <code>name_overlap</code> (:137). <b>Operating:</b> statuses at :222; each month's neighboring snapshots at :1146&ndash;1152; "before OR after" at :1169&ndash;1174. <b>Outline</b> (flag only): :1402&ndash;1499. <b>Approved</b> = operating and name_check in <code>NAME_OK</code>, at :1504. Output: <code>1e_storefront_place_months.parquet</code>, column <code>approved</code>.</td><td>Section D, items 7&ndash;10.</td></tr>
+<tr><td>0.2c</td><td>The 258 review items, 241 yes / 17 no</td><td>Different-address candidates: <code>make_step1.py:1329&ndash;1383</code> (same city at :1348, same house number at :1358). The review items are the [1e] rows whose name_check is review / yes_in_review / no_in_review, one item per place ID, name, and storefront (<code>build_review_1e.py:38</code>). Verdicts are read at <code>make_step1.py:1384&ndash;1397</code>. See section C.</td><td>See section C.</td></tr>
+<tr><td>0.2d</td><td>Match rates before and after review, and with outlines</td><td>The match-rate log, displayed at <code>make_step1.py:1516</code>. Its rows are added at :1273 (exact address, any business), :1327 ("+ store name (auto)" = before review), :1399 ("+ manual verdicts = APPROVED" = after), :1400 ("(all review = yes)", equal to approved, so nothing is pending), and :1496&ndash;1499 (the outline what-ifs). The function is <code>match_rates</code> (:1199&ndash;1216); its denominators are printed at :1189 (546 licenses, 542 storefronts, 17,742 storefront-months).</td><td>&mdash;</td></tr>
+<tr><td>0.2e</td><td>How a visit becomes a dispensary visit; one storefront per label</td><td><code>make_step4.py:270&ndash;309</code>: <code>store_labels</code> (:278&ndash;287) keeps approved [1e] rows, one per label-month (exact address first, :285); <code>store_geography</code> (:289&ndash;296) attaches county / place / ZCTA / CBG from [1d]; <code>dispensary_visits</code> (:304&ndash;309) joins the sample tables on the label key (:275). Store geography itself: <code>make_step1.py:926&ndash;1088</code> (written at :1084).</td><td>&mdash;</td></tr>
+</table></div>
+
+<h3>0.3 Cleaning (the "step 0" fixes)</h3>
+<div class="tablewrap"><table>
+<tr><th>Label</th><th>What it says</th><th>Where it comes from</th><th>To change it</th></tr>
+<tr><td>0.3a</td><td>How "step 0" was interpreted</td><td>A judgment call. All three fixes are in <code>fix_visits</code>, <code>make_step4.py:316&ndash;366</code>, applied at :382 (yearly) and :403 (quarterly).</td><td>Each fix can be switched off separately (section D, items 4&ndash;6).</td></tr>
+<tr><td>0.3b</td><td>Duplicates: 5,243 yearly / 11,884 quarterly</td><td><code>make_step4.py:319&ndash;326</code> (key: period, device, UTC start, place; longest dwell kept). Counts printed at :365 ("duplicates dropped"), once per sample.</td><td>Section D, item 4.</td></tr>
+<tr><td>0.3c</td><td>Midnight merge: 27&ndash;28% vs. 1.7&ndash;2.0%; 2,036 / 6,020 pieces merged; 2,016 / 5,616 merged visits kept</td><td><code>make_step4.py:328&ndash;356</code>; settings <code>MIDNIGHT_WINDOW</code> (:313) and <code>MAX_SPLIT_GAP</code> (:314). The 27&ndash;28% vs. 1.7&ndash;2.0% is printed at :343; the pieces merged at :365 ("halves merged back"); the visits made from 2+ pieces at :461 (column <code>visit_parts</code> in [4bi]/[4bii]). The "about 250 with a one-minute window" comparison came from a trial run with <code>MIDNIGHT_WINDOW = 60</code>.</td><td>Section D, item 5.</td></tr>
+<tr><td>0.3d</td><td>Local calendar windows: 319 / 3,681 dropped, plus 22,180 quarterly visits outside the stretch</td><td>Windows: <code>make_step4.py:209&ndash;267</code>, written to <code>device_windows_yearly.parquet</code> (:236) and <code>device_windows_quarterly.parquet</code> (:264). The filter: :358&ndash;363. Counts printed at :365 ("outside the window": 319 yearly, 25,861 quarterly; the 3,681 of those outside the calendar quarter is the same count under the old whole-quarter window, the other 22,180 are outside the stretch).</td><td>Section D, items 3 and 6.</td></tr>
+<tr><td>0.3e</td><td>116,273 / 335,894 visits; 1.1&ndash;1.2% leftover excess</td><td>Totals: printed at <code>make_step4.py:365</code> ("visits left"), by year at :386 and by quarter at :407. Leftover excess: printed at :461 (column <code>utc_midnight_start</code> flags these visits).</td><td>&mdash;</td></tr>
+</table></div>
+
+<h3>0.4 Homes and home geography</h3>
+<div class="tablewrap"><table>
+<tr><th>Label</th><th>What it says</th><th>Where it comes from</th><th>To change it</th></tr>
+<tr><td>0.4a</td><td>Home rule; 487 device-quarters without a home; home city; 83% with a city; 99.6% ZIP match</td><td>Home rule: <code>assign_homes</code>, <code>make_step2.py:327&ndash;376</code> (first home visit in the window at :343, earlier home carried forward at :356). In-window / carried-forward / dropped counts are displayed at <code>make_step2.py:393</code> (yearly) and :411 (quarterly); the quarterly dropped column sums to 487. Home city: <code>make_step4.py:68&ndash;142</code>, using the block assignment file (:76); the largest 21+ share is chosen at :134&ndash;138, written to <code>cbg2010_place_shares.parquet</code> (:131); the share of CBGs in one place is printed at :140. Shares with a city / with a ZCTA: tables displayed at <code>make_step4.py:179</code> and :201. Output: [4ai] (:177) and [4aii] (:199).</td><td>Section D, items 11&ndash;12.</td></tr>
+</table></div>
+
+<h3>S. The two samples</h3>
+<div class="tablewrap"><table>
+<tr><th>Label</th><th>What it says</th><th>Where it comes from</th><th>To change it</th></tr>
+<tr><td>S.a</td><td>Sample definitions; 5,270 device-years below 350 days and 17,482 device-quarters with a 59-day stretch on the local calendar</td><td>Yearly: <code>make_step2.py:80</code> (<code>num_days &gt;= 350</code>). Quarterly: <code>make_step2.py:128</code> (first pass, 60+ days) and :155 (longest run of consecutive days &ge; 60, built at :132&ndash;156). The sample-restricted visit tables: :207&ndash;285. The 5,270 / 17,482: printed at <code>make_step4.py:266&ndash;267</code>.</td><td>Section D, items 1&ndash;2.</td></tr>
+<tr><td>S.b</td><td>Quarterly visits only during the 60-day stretch; 22,180 of 358,074 (6.2%) dropped</td><td><code>longest_stretch</code>, <code>make_step4.py:238&ndash;254</code>: the device's runs of consecutive days (:243&ndash;245), the longest one (:246&ndash;247), cut to the local calendar quarter (:248&ndash;251), with <code>observed_days</code> = its length (:252). Called once per quarter at :256&ndash;264. The visit filter that uses it is at :358&ndash;363. The 358,074 is the quarterly total under the whole-quarter window (the previous version); 335,894 are left.</td><td>Section D, item 3.</td></tr>
+<tr><td>S.c</td><td>Observed days: 357.9 a year; quarterly stretch 80.2 days (median 84, 59&ndash;92), vs. 86.8 observed days in the whole quarter</td><td>Yearly: <code>observed_days</code>, <code>make_step4.py:222&ndash;229</code>. Quarterly: <code>longest_stretch</code> (:238&ndash;254); the mean is printed at :267. Averages by period are column <code>observed_days_mean</code> of [4ci]. The median and range are from <code>device_windows_quarterly.parquet</code>, and the 86.8 from the previous whole-quarter run.</td><td>&mdash;</td></tr>
+</table></div>
+
+<h3>1. Sample size and representativeness</h3>
+<div class="tablewrap"><table>
+<tr><th>Label</th><th>What it says</th><th>Where it comes from</th><th>To change it</th></tr>
+<tr><td>1a</td><td>Method: device-periods vs. devices, county shares, dissimilarity, correlation</td><td><code>make_step4.py:570&ndash;634</code>. Periods are built by <code>period_groups</code> (:586&ndash;591). Census shares: <code>wa_counties</code> (:492&ndash;494, uses <code>population_total</code>). Dissimilarity at :617, correlation at :618.</td><td>Section D, item 13.</td></tr>
+<tr><td>T1.1, T1.2, 1b, 1c</td><td>Sample sizes, dissimilarity, correlation by period</td><td>[4ci] <code>4ci_sample_sizes.parquet</code> (written at <code>make_step4.py:630</code>; columns <code>devices</code>, <code>device_periods</code>, <code>observed_days_mean</code>, <code>dissimilarity</code>, <code>correlation</code>), also displayed at :634.</td><td>&mdash;</td></tr>
+<tr><td>1c, T1.3</td><td>County ratios (King 0.83, etc.)</td><td>[4ci'] <code>4ci_county_representativeness.parquet</code> (written at <code>make_step4.py:631</code>), filter <code>period == "all"</code>, column <code>ratio</code>. Every period is in there, not only "all".</td><td>&mdash;</td></tr>
+<tr><td>F1.1&ndash;F1.4</td><td>Representativeness charts</td><td><code>make_step4.py:488&ndash;568</code>, the week 6 chart code, run once per sample (chart at :549). Files: <code>representativeness_{yearly,quarterly}[_5_largest_excluded].html</code>. Leaving out the 5 largest counties is at :507.</td><td>&mdash;</td></tr>
+<tr><td>1a&prime;, T1.4, 1d</td><td>Chi-squared statistic against the census, its p-value, per device, and as a multiple of the pooled sample (1.00x)</td><td><code>make_step4.py:608&ndash;610</code> (expected devices = WA-home devices &times; population share; the statistic), p-value with 38 degrees of freedom at :620 (<code>scipy.stats.chi2</code>, imported at :52), per device at :621, multiples of the sample's "all" row at :624&ndash;629. Columns <code>chi2</code>, <code>chi2_p_value</code>, <code>chi2_per_device</code>, <code>chi2_vs_all</code>, <code>chi2_per_device_vs_all</code> in [4ci] (written at :630). The device counts in T1.4 are <code>with_wa_home</code>. The dissimilarity and correlation quoted in 1d are T1.1's.</td><td>Section D, item 13 (the benchmark). A different baseline than the pooled sample (say, 2019) means changing the <code>period == "all"</code> filter at :626&ndash;627.</td></tr>
+<tr><td>F1.5&ndash;F1.6</td><td>Chi-squared multiples over time, raw and per device</td><td><code>make_step4.py:636&ndash;670</code>, run once per sample. Years or quarters only (the quarterly sample's pooled years are left out) at :642; chart at :651; the 1.00x line at :665. Files: <code>representativeness_chi2_{yearly,quarterly}.html</code>.</td><td>&mdash;</td></tr>
+</table></div>
+
+<h3>2. Dispensary visits</h3>
+<div class="tablewrap"><table>
+<tr><th>Label</th><th>What it says</th><th>Where it comes from</th><th>To change it</th></tr>
+<tr><td>2a</td><td>Method: three measures, the license rule, the statistics</td><td><code>make_step4.py:761&ndash;807</code>. Measures at :770; license count at :779; per 30 observed days at :784; percentiles at :799.</td><td>Section D, items 14, 15, 18.</td></tr>
+<tr><td>T2.1, 2b</td><td>Share with a visit</td><td>[4cii] <code>4cii_visit_distributions.parquet</code> (written at <code>make_step4.py:805</code>), any measure, column <code>share_with_visit</code> (also <code>with_visit</code>, <code>device_periods</code>). Per-quarter values are the rows with a quarter as <code>period</code>. The coverage-by-year numbers in 2b: printed at <code>make_step5.py:306</code>.</td><td>&mdash;</td></tr>
+<tr><td>T2.2, 2c</td><td>Visits among visitors</td><td>[4cii], <code>measure</code> = "visits" or "visits per 30 observed days", <code>period</code> = "all" (displayed at <code>make_step4.py:807</code>).</td><td>&mdash;</td></tr>
+<tr><td>T2.3, 2d</td><td>Distinct stores among visitors</td><td>[4cii], <code>measure</code> = "stores (licenses)" (and "storefronts" for the check).</td><td>&mdash;</td></tr>
+<tr><td>F2.1&ndash;F2.4</td><td>Visit distribution charts</td><td><code>make_step4.py:672&ndash;759</code>, the week 6 chart code, per device-period instead of over all three years. Per-device counts at :679&ndash;696 and charts at :702; weeks for the weekly charts at :722 (Monday start), charts at :745. Tail versions at :701 and :744.</td><td>&mdash;</td></tr>
+</table></div>
+
+<h3>3. When do people shop?</h3>
+<div class="tablewrap"><table>
+<tr><th>Label</th><th>What it says</th><th>Where it comes from</th><th>To change it</th></tr>
+<tr><td>3a</td><td>Method: local time, outside-hours definition, dwell definition</td><td><code>make_step4.py:972&ndash;1076</code>. Day of week and hour at :989&ndash;990; outside 8&ndash;24 at :1010; the under-3-hour version at :1011; dwell statistics at :1012&ndash;1019.</td><td>Section D, items 16&ndash;17.</td></tr>
+<tr><td>T3.1, T3.2, 3b, 3c</td><td>Shares by day and hour; busiest hour</td><td>[4ciii] <code>4ciii_visit_start_times.parquet</code> (written at <code>make_step4.py:1071</code>; sample &times; day_of_week &times; hour). Sum <code>share</code> over hours for days and over days for hours. The day &times; hour grid is displayed at :1079. The daylight / standard time comparison in 3c: displayed at :466&ndash;475.</td><td>&mdash;</td></tr>
+<tr><td>T3.3, 3d, 3e</td><td>Outside 8&ndash;24; dwell distribution</td><td>[4ciii'] <code>4ciii_start_times_and_dwell.parquet</code> (written at <code>make_step4.py:1074</code>, displayed at :1076), <code>period</code> = "all"; the per-period rows give the 2021Q4 figure. The 6&ndash;8 a.m. and midnight&ndash;6 a.m. splits are sums of [4ciii] by hour. The 52 / 205 visits of 23+ hours are <code>share_23h_plus</code> &times; <code>visits</code>.</td><td>&mdash;</td></tr>
+<tr><td>F3.1&ndash;F3.3</td><td>Heatmap, by hour, by day</td><td><code>make_step4.py:1023&ndash;1058</code>: heatmap at :1024, by hour / by day at :1047. Files <code>start_times_heatmap_*</code>, <code>start_times_by_hour_*</code>, <code>start_times_by_day_*</code>.</td><td>&mdash;</td></tr>
+<tr><td>F3.4&ndash;F3.6 and links</td><td>Week 6 time-of-day charts</td><td><code>make_step4.py:809&ndash;970</code>: <code>occupancy_chart</code> (:820&ndash;880), entrances (:930), dwell by arrival block (:882 and :959), under-3-hours occupancy (:968&ndash;970). The all-visits dwell histogram is at :1061.</td><td>&mdash;</td></tr>
+</table></div>
+
+<h3>4. Where do people shop?</h3>
+<div class="tablewrap"><table>
+<tr><th>Label</th><th>What it says</th><th>Where it comes from</th><th>To change it</th></tr>
+<tr><td>4a</td><td>Method: pooled vs. device-average; city and ZIP rules</td><td><code>make_step5.py:60&ndash;109</code>. Levels and the home/store columns compared: <code>LEVELS</code> (:47&ndash;52; ZIP is the home USPS ZIP vs. the store ZCTA at :50). Only devices with a home (:70); the in-home-area test at :76 (a store with no city never matches); the device average at :92. The 90% ZIP / ZCTA agreement: printed at <code>make_step5.py:315</code>.</td><td>Section D, items 19&ndash;20.</td></tr>
+<tr><td>T4.1, 4b</td><td>Home-area shares</td><td>[5a] <code>5a_home_area_visit_shares.parquet</code> (written at <code>make_step5.py:107</code>, displayed at :109), <code>period</code> = "all", columns <code>share_of_visits</code> and <code>device_average_share</code>; by period: displayed at :112. Devices counted at each level: column <code>devices</code>. The 8% of block groups with a store: [5b] (392 of 4,783 in 2020).</td><td>&mdash;</td></tr>
+<tr><td>F4.1</td><td>Home-area chart</td><td><code>make_step5.py:332&ndash;352</code> (chart at :338). File <code>home_area_visit_shares.html</code>.</td><td>&mdash;</td></tr>
+</table></div>
+
+<h3>5. Is ease of access correlated with visits?</h3>
+<div class="tablewrap"><table>
+<tr><th>Label</th><th>What it says</th><th>Where it comes from</th><th>To change it</th></tr>
+<tr><td>5.1a</td><td>Open stores, has a store, density; 472&ndash;503 stores a month</td><td><code>make_step5.py:117&ndash;200</code>. Open storefront-months come from [1e'] (<code>1e_storefront_months.parquet</code>, written at <code>make_step1.py:1186</code>), with current-list-only months dropped (<code>make_step5.py:136</code>); one store per lowest license (:137); store areas from [1d] (:126&ndash;131); average over the period's months (:159&ndash;167); has a store (:179); stores per 10,000 adults 21+ (:180). The 472&ndash;503 is printed at :146.</td><td>Section D, items 21&ndash;24.</td></tr>
+<tr><td>5.1b, T5.1, 5.1d</td><td>Quartiles: per level and period, among areas with a store</td><td>Quartile formula at <code>make_step5.py:182&ndash;187</code> (ranks within sample, period, level, and has_store). T5.1 is the table displayed at :194&ndash;200. Output [5b] <code>5b_area_store_access.parquet</code> (written at :191), column <code>density_quartile</code>.</td><td>Section D, item 24.</td></tr>
+<tr><td>5.1c</td><td>Assigning devices to their home area's group</td><td><code>make_step5.py:202&ndash;230</code>: devices from [4a] with zero-filled visit counts (:211&ndash;215), joined to [5b] at each level (:216&ndash;225). Outputs [5ci]/[5cii] (written at :227).</td><td>&mdash;</td></tr>
+<tr><td>T5.2, T5.3, 5.2a&ndash;c</td><td>Visit distributions by access group</td><td><code>make_step5.py:232&ndash;288</code>: <code>visit_stats</code> at :240&ndash;254. Output [5d] <code>5d_visits_by_access.parquet</code> (written at :288), <code>devices</code> = "all"; displayed at :291 (yearly) and :297 (quarterly). Counties in each quartile: [5b] at <code>level</code> = "county". Clark County: displayed at <code>make_step5.py:318&ndash;321</code>.</td><td>&mdash;</td></tr>
+<tr><td>5.2d</td><td>Among visitors</td><td>[5d], <code>devices</code> = "1+ visits"; displayed at <code>make_step5.py:294</code> (yearly) and :300 (quarterly).</td><td>&mdash;</td></tr>
+<tr><td>F5.1&ndash;F5.4</td><td>Density charts</td><td><code>make_step5.py:354&ndash;378</code> (chart at :362). Files <code>share_with_visit_by_density_*</code>, <code>mean_by_density_*</code>.</td><td>&mdash;</td></tr>
+</table></div>
+
+<h3>6. Caveats</h3>
+<div class="tablewrap"><table>
+<tr><th>Label</th><th>What it says</th><th>Where it comes from</th></tr>
+<tr><td>6a</td><td>Coverage: 79% of storefronts, 62% of open months, 53 / 65 / 67% by year</td><td>The match-rate log (<code>make_step1.py:1516</code>); by year: printed at <code>make_step5.py:306</code>.</td></tr>
+<tr><td>6b</td><td>Snapshot gaps; 7% of approved visits in one-sided months; 2021Q4</td><td>Snapshot dates: printed at <code>make_step1.py:261</code>, and the irregularities log (:1560 onward). <b>The 7% figure was a one-off calculation in an earlier session</b>, written down in <code>step1_future_fixes.md</code> (fix 1); no script computes it. 2021Q4 size: [4ci]; its early-morning share: [4ciii'].</td></tr>
+</table></div>
+
+
+<h3>7. Which stores we could match (Step 6)</h3>
+<div class="tablewrap"><table>
+<tr><th>Label</th><th>What it says</th><th>Where it comes from</th><th>To change it</th></tr>
+<tr><td>7.1a</td><td>Universe, matched, months covered, locations</td><td><code>make_step6.py:50&ndash;145</code>. Operating storefront-months from [1e'] without current-list-only months (:65&ndash;67); approved label-months from [1e] (:69); per storefront open / covered months and <code>matched</code> (:71&ndash;82); locations from [1d] (:113&ndash;117). Output [6a] <code>6a_storefront_coverage.parquet</code> (written at :139); totals printed at :141&ndash;143. The license-based rate (435 of 546) is the Step 1 match-rate log (<code>make_step1.py:1516</code>).</td><td>Section D, item 25.</td></tr>
+<tr><td>7.1b</td><td>Reasons missing; the three groupings; dissimilarity and chi-square</td><td>Reasons: <code>make_step6.py:86&ndash;104</code> (the order of the checks is the order of the <code>when</code> lines, :97&ndash;101). Place size classes: :126&ndash;131 (stores) and :171&ndash;177 (population). Groupings at :187; dissimilarity at :220&ndash;221; chi-square at :216, with the share of small expected cells at :223.</td><td>Section D, items 26&ndash;27.</td></tr>
+<tr><td>T7.1, 7.2a</td><td>Matched / missing counts, reasons, months; coverage within matched stores; by year</td><td>Reason counts: displayed at <code>make_step6.py:145</code>. Coverage within matched stores (74% mean, 83% median, 39% full, 22% under half): displayed at :147&ndash;156. By year: displayed at :241&ndash;246.</td><td>&mdash;</td></tr>
+<tr><td>T7.2, 7.2b</td><td>By place type and size; p = 0.89 / 0.78</td><td>[6b] <code>6b_coverage_by_area.parquet</code> (written at <code>make_step6.py:230</code>), <code>grouping</code> = "place type" / "place size", displayed at :235&ndash;236. Tests: displayed at :233.</td><td>&mdash;</td></tr>
+<tr><td>T7.3, 7.2c</td><td>By county; p = 0.01; dissimilarity 6.3% / 23.2%</td><td>[6b], <code>grouping</code> = "county", displayed at <code>make_step6.py:238&ndash;239</code>; tests at :233. Missing stores by city (10 in Seattle): column <code>place_name</code> of [6a], filtered to missing stores in King County.</td><td>&mdash;</td></tr>
+<tr><td>7.2d</td><td>What it means for sections 2&ndash;5</td><td>Interpretation, combining [6b] with section 5's Clark County check (<code>make_step5.py:317</code>).</td><td>&mdash;</td></tr>
+<tr><td>F7.1&ndash;F7.6</td><td>Bar and line charts</td><td><code>make_step6.py:248&ndash;372</code>: by county (:256&ndash;276), shares by county (:278&ndash;307), place type / size (:309&ndash;332), reasons (:334&ndash;349), by month (:351&ndash;372). Files <code>store_*.html</code>.</td><td>&mdash;</td></tr>
+<tr><td>F7.7&ndash;F7.8</td><td>Maps</td><td><code>make_step6.py:374&ndash;442</code>: county outlines merged from the 2020 block group shapes Step 1 downloaded and simplified (:377&ndash;385); counties shaded by match rate (:393&ndash;407); one dot per storefront at its [1d] coordinates (:409&ndash;423); statewide and Puget Sound views (:432&ndash;442). Files <code>store_coverage_map.html</code>, <code>store_coverage_map_puget_sound.html</code>.</td><td>The zoom box is at :434.</td></tr>
+</table></div>
+
+<!-- ============================================================ -->
+<h2 id="review">C. The manual review: before, after, and what it changed</h2>
+<p>The only place a person labeled data by hand is the Step 1 store review. Everything else is computed.</p>
+<p><strong>What was reviewed.</strong> After the automatic checks (0.2b), every [1e] label whose name might be the store's but did not pass the automatic name rule was set to <code>name_check = "review"</code> and left out of the approved list. That covers four kinds of label: a tradename match with extra words, a cannabis word without a tradename match, only the cannabis category code, or any label at a different address (<code>make_step1.py:1299&ndash;1316</code> and :1329&ndash;1383). <code>build_review_1e.py</code> grouped those rows into 258 items (:38&ndash;54), one per place ID, Veraset name, and WSLCB storefront, ordered by visits (:53). It wrote them into <code>review/1e_review_page.html</code>, which shows the Veraset label month by month, the WSLCB history at the address, and links to maps and searches. Each item was marked yes or no on that page, and the verdicts were exported to <code>review/1e_review_verdicts.csv</code> (columns <code>safegraph_place_id</code>, <code>location_name</code>, <code>street_address_norm</code>, <code>city_norm</code>, <code>verdict</code>, plus notes and context).</p>
+<p><strong>How the verdicts enter the pipeline.</strong> <code>make_step1.py:1384&ndash;1397</code> reads the CSV if it exists and, for rows still marked "review", turns a yes into <code>yes_in_review</code> (:1390) and a no into <code>no_in_review</code> (:1391). A verdict cannot override a row that was already "auto" or "no". Approval then treats <code>yes_in_review</code> the same as "auto" (<code>NAME_OK</code>, :1326). The operating-license check still applies, so a yes only approves the months a license was operating there.</p>
+<div class="tablewrap"><table>
+<tr><th>&nbsp;</th><th>Before review (automatic only)</th><th>After review (241 yes, 17 no)</th><th>Change</th></tr>
+<tr><td>Licenses with an approved label (of 546)</td><td>318 (58.2%)</td><td>435 (79.7%)</td><td>+117</td></tr>
+<tr><td>Storefronts with an approved label (of 542)</td><td>313 (57.7%)</td><td>427 (78.8%)</td><td>+114</td></tr>
+<tr><td>Open storefront-months covered (of 17,742)</td><td>7,943 (44.8%)</td><td>10,951 (61.7%)</td><td>+3,008</td></tr>
+<tr><td>Approved visits in [1e] (raw, all devices)</td><td>794,158</td><td>1,063,478</td><td>+269,320</td></tr>
+<tr><td>Places by name_check</td><td>auto 393, review 206 (incl. different-address candidates), no 426</td><td>auto 393, yes_in_review 189, no_in_review 17, no 426</td><td>no item left pending</td></tr>
+</table></div>
+<p>The "before" and "after" columns are the rows added to the match-rate log at <code>make_step1.py:1327</code> ("+ store name (auto)") and :1399 ("+ manual verdicts = APPROVED"); the place counts are printed at :1324 and :1397. Before the outline check was dropped, the same review moved approval from 45.4% to 62.3% of licenses.</p>
+<p><strong>What it changed downstream.</strong> The verdicts only change which [1e] label-months are approved. That flows into [4bi]/[4bii] (which visits count), and from there into every visit-based result: sections 2, 3, 4, and 5's visit outcomes, and the coverage figures in 0.2 and 6a. Two things do not depend on the review: the samples and representativeness (section 1), and store access in section 5 ([5b]), which is built from WSLCB's open storefront-months whether or not Veraset has the store.</p>
+<p><strong>To redo or check it.</strong> Serve the review page on port 8793 (the browser keeps the verdicts per address; see <code>tools/README.md</code>), change verdicts, export to <code>review/1e_review_verdicts.csv</code>, then rerun Steps 1, 4, and 5. To see the results with no manual review at all, move the CSV out of <code>review/</code> and rerun; every review item then stays unapproved. An earlier review page for [1b] (<code>review/1b_suspicious_matches.*</code>) is superseded and not used by anything.</p>
+
+<!-- ============================================================ -->
+<h2 id="knobs">D. Every assumption you might want to change</h2>
+<p>Each row gives where the setting lives, its current value, and what changing it would do. After changing anything in Step 1, rerun Steps 1, 4, and 5; in Step 4, rerun 4 and 5; in Step 5, rerun 5 only; in Step 2, rerun 2, 4, and 5. Then rerun <code>tools/build_writeup.py</code>.</p>
+<div class="tablewrap"><table>
+<tr><th>#</th><th>Assumption</th><th>Where</th><th>Now</th><th>Alternatives, and what changes</th></tr>
+<tr><td>1</td><td>Yearly sample threshold</td><td><code>make_step2.py:80</code></td><td>350 days, counted on local days in the UTC folders</td><td>A higher threshold gives fewer, more reliably observed devices. Counting only local-calendar days would drop 5,270 device-years (filter on <code>observed_days</code> from <code>device_windows_yearly.parquet</code> in Step 4, which avoids rerunning Step 2).</td></tr>
+<tr><td>2</td><td>Quarterly sample threshold</td><td><code>make_step2.py:128</code> and :155</td><td>60 consecutive days</td><td>As above; 17,482 device-quarters have a 59-day stretch once cut to the local calendar.</td></tr>
+<tr><td>3</td><td>Which days of the window count</td><td><code>make_step4.py:222&ndash;264</code> (<code>observed_days</code>, <code>longest_stretch</code>, and the window bounds)</td><td>Yearly: the whole local calendar year. Quarterly: the device's 60+ day stretch, cut to the local calendar quarter</td><td>To count every visit in the quarter instead (the version used for a while before; it gave 358,074 quarterly visits and 10.4% of device-quarters visiting), replace <code>longest_stretch(...)</code> at :261 with <code>observed_days(...)</code>, the function the yearly sample uses, with the same arguments. Everything downstream already reads these columns.</td></tr>
+<tr><td>4</td><td>Duplicate removal</td><td><code>make_step4.py:319&ndash;326</code></td><td>Same device, UTC start, place; keep longest dwell</td><td>Keep the first copy instead (sort by month); or delete the <code>unique</code> line (:323) to reproduce the old double counting of visits on the 1st.</td></tr>
+<tr><td>5</td><td>UTC-midnight merge</td><td><code>MIDNIGHT_WINDOW</code> <code>make_step4.py:313</code>, <code>MAX_SPLIT_GAP</code> :314</td><td>30 min, 60 min</td><td><code>MIDNIGHT_WINDOW = 60</code> only merges starts in the first minute (about 250 yearly); <code>MIDNIGHT_WINDOW = 0</code> turns merging off. Bigger values merge more, including some separate visits (the background rate printed at :343 tells you roughly how many).</td></tr>
+<tr><td>6</td><td>Local-calendar trimming</td><td><code>make_step4.py:358&ndash;363</code></td><td>On</td><td>Remove the filter (:361) to keep the ~8 hours before and ~16 hours after each window that the UTC folders add.</td></tr>
+<tr><td>7</td><td>Approval: name check</td><td><code>NAME_OK</code> <code>make_step1.py:1326</code>; rule :1299&ndash;1316</td><td>auto or yes_in_review</td><td>Add <code>"review"</code> to count unreviewed items (none are left now). Tighten "auto" by raising the 0.5 overlap at :1304, or edit the word lists at :1278&ndash;1280.</td></tr>
+<tr><td>8</td><td>Approval: operating license</td><td><code>make_step1.py:1169&ndash;1174</code> (before OR after); statuses :222</td><td>A license operating in the snapshot before or after the month</td><td>To require both snapshots, add <code>pl.len().alias("num_samples")</code> to the <code>.agg</code> at :1173 and keep only rows with <code>num_samples == 2</code> (this drops the ~7% of visits in one-sided months, see <code>step1_future_fixes.md</code> fix 1). Adding a status to <code>OPERATING_STATUSES</code> widens which licenses count.</td></tr>
+<tr><td>9</td><td>Approval: building outlines</td><td><code>make_step1.py:1504</code> (approved); <code>OUTLINE_OK</code> :1495</td><td>Not used (flag only)</td><td>Add <code>&amp; pl.col("outline_evidence").is_in(OUTLINE_OK)</code> to the approved line to bring the outline check back (62.3% of licenses), or <code>.is_in(["own"])</code> for the strictest version (40.7%).</td></tr>
+<tr><td>10</td><td>Address matching</td><td><code>by_zip</code> <code>make_step1.py:1258&ndash;1263</code>; <code>normalize_address</code> :67</td><td>Exact address, same city or same ZIP</td><td>Dropping <code>by_zip</code> loses stores Veraset files under an unincorporated area name. Changing normalization ripples into [1a]&ndash;[1d]; <code>step1_future_fixes.md</code> fixes 2&ndash;3 suggest an alias table instead.</td></tr>
+<tr><td>11</td><td>Home rule</td><td><code>make_step2.py:327&ndash;376</code> (<code>assign_homes</code>)</td><td>First home visit in the window; else the latest earlier one</td><td>Using the most common home location in the window would follow movers differently; it would change [2b] and everything with a home.</td></tr>
+<tr><td>12</td><td>Home city</td><td><code>make_step4.py:134&ndash;138</code></td><td>Place with the largest 21+ share of the home CBG ("no place" can win)</td><td>Drop or down-weight devices whose <code>home_place_share</code> is under some cutoff (about 1% are under 0.5) by filtering the crosswalks where Step 5 reads them (<code>make_step5.py:55&ndash;58</code>); or assign the largest <em>place</em> even when "no place" is bigger.</td></tr>
+<tr><td>13</td><td>Representativeness benchmark</td><td><code>make_step4.py:493</code></td><td>Total population</td><td>Use <code>population_21plus</code> instead (it is in [3c]).</td></tr>
+<tr><td>14</td><td>Store identity for "distinct stores"</td><td><code>make_step4.py:779</code></td><td>Lowest operating license at the storefront that month</td><td>"storefronts" is already reported; distinct Veraset places (<code>safegraph_place_id</code>) would be a third option.</td></tr>
+<tr><td>15</td><td>Per-30-day normalization</td><td><code>make_step4.py:784</code></td><td>Observed days</td><td>Calendar days (365 / 90&ndash;92) instead: use <code>window_end_day - window_start_day + 1</code> in place of <code>observed_days</code>.</td></tr>
+<tr><td>16</td><td>Shopping-hours window</td><td><code>make_step4.py:1010&ndash;1011</code></td><td>Start hour before 8; under-3h version</td><td>Change the 8, or the 180-minute cut.</td></tr>
+<tr><td>17</td><td>Long-dwell thresholds</td><td><code>make_step4.py:1018&ndash;1019</code>; charts: <code>MAX_DWELL</code> :968</td><td>3 hours, 23 hours</td><td>Any cut. Dropping long visits altogether would be a filter on the visits after :382 and :403.</td></tr>
+<tr><td>18</td><td>Percentiles reported</td><td><code>make_step4.py:799</code>, :1015; <code>make_step5.py:240&ndash;254</code></td><td>p10&ndash;p99 (Step 4), p10&ndash;p90 (Step 5)</td><td>Add to the lists.</td></tr>
+<tr><td>19</td><td>ZIP level</td><td><code>LEVELS</code> <code>make_step5.py:50</code></td><td>Home USPS ZIP vs. store ZCTA</td><td>Using the store's WSLCB ZIP (<code>zip5</code> in [1d]) instead of its ZCTA would compare USPS codes on both sides.</td></tr>
+<tr><td>20</td><td>Stores outside any city</td><td><code>make_step5.py:76</code> and :163</td><td>Never "in the home city"; count toward no city's access</td><td>Could be treated as their own "unincorporated" area.</td></tr>
+<tr><td>21</td><td>What counts as open</td><td><code>make_step5.py:136</code></td><td>Dated snapshots only (current-list-only months dropped)</td><td>Remove the filter to also count months only the undated list supports (May&ndash;Dec 2021 openings).</td></tr>
+<tr><td>22</td><td>Counting stores</td><td><code>make_step5.py:137</code>, :165&ndash;167</td><td>One per lowest license; average over the period's months</td><td>Count storefronts instead, or "open at any point in the period" instead of the average.</td></tr>
+<tr><td>23</td><td>Density denominator</td><td><code>make_step5.py:180</code></td><td>2020 population 21+</td><td>Total population, or land area for a pure availability measure.</td></tr>
+<tr><td>24</td><td>Quartiles</td><td><code>make_step5.py:182&ndash;187</code></td><td>Per sample, period, and level; areas with a store; each area once</td><td>Pooled cutoffs: drop <code>"period"</code> from the two <code>.over()</code> lists at :184. Population-weighted quartiles: rank on the cumulative 21+ population instead of the area count. Putting no-store areas in Q1: remove <code>"has_store"</code> from <code>.over()</code>.</td></tr>
+<tr><td>25</td><td>What counts as a matched store</td><td><code>make_step6.py:81</code></td><td>An approved label in at least one operating month</td><td>Require a minimum share of months covered (column <code>share_months_covered</code>), e.g. half, for a stricter definition.</td></tr>
+<tr><td>26</td><td>Order of the reasons missing</td><td><code>make_step6.py:97&ndash;101</code></td><td>No place; name only outside its months; rejected in review; only other businesses</td><td>Reordering the <code>when</code> lines changes which reason a store with more than one gets.</td></tr>
+<tr><td>27</td><td>Place size classes</td><td><code>make_step6.py:126&ndash;131</code> and :171&ndash;177</td><td>Under 10k, 10k&ndash;50k, 50k&ndash;100k, 100k+ adults 21+, outside any place</td><td>Change the cutoffs in both places together.</td></tr>
+</table></div>
+
+<!-- ============================================================ -->
+<h2 id="odd">E. Things that are not fully reproducible, and small quirks</h2>
+<p><strong>Typed-in prose.</strong> The write-up's numbers were copied from the tables above after the final run; they do not update themselves. The charts update when <code>tools/build_writeup.py</code> is rerun.</p>
+<p><strong>One-off numbers.</strong> The "about 7% of approved visits in one-sided months" (6b), and its breakdown in <code>step1_future_fixes.md</code>, came from an ad hoc calculation that no script reproduces. Every other number in the write-up comes from a printed output or table listed in section B.</p>
+<p><strong>A tie in Step 1.</strong> When two versions of a place's category code have the same number of visits in a month, which one is kept is not fixed (<code>make_step1.py:1233</code>), so rerunning Step 1 can change <code>naics_code</code> on a row or two of [1e]. A rerun during this work changed one row, which was not approved; approvals and visit counts were identical.</p>
+<p><strong>Raw [1e] visit counts are not cleaned.</strong> <code>num_visits</code> in [1e] counts rows in the raw monthly files, so it still includes the duplicates removed in 0.3 (and 7,401 visits are counted at two storefronts if you simply sum it). The 1,063,478 in 0.2d is that raw count. All results in sections 1&ndash;5 use the cleaned visits in [4bi]/[4bii].</p>
+<p><strong>A tie in the duplicate removal.</strong> A visit on the 1st of a month appears in two monthly folders with the same dwell, and which copy is kept is not fixed (<code>make_step4.py:323</code>). The copies differ only in <code>month</code> (the folder) and the store label fields that come with it, so a rerun can change those on a couple of thousand rows of [4bi]/[4bii] (1,785 in the yearly sample last time). Every result stays the same (the lowest operating license, which counts stores, is the same on both copies); the rerun for the 60-day stretch confirmed the yearly results were identical.</p>
+<p><strong>Step 2 has never been run from its script.</strong> <code>make_step2.py</code> is a copy of the existing notebook, checked to produce identical code, but the notebook's outputs come from the original hand-run notebook. Two of its blocks are scratch that does nothing for the results (<code>make_step2.py:287</code>, a test save, and :289, a look at one table).</p>
+</main>
+</body>
+</html>

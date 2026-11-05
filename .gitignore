@@ -1,0 +1,38 @@
+# Secrets: never commit API keys
+census_api_key.txt
+dewey_api_key.txt
+*api_key*
+
+# OS / local tool clutter
+.DS_Store
+.claude/
+__pycache__/
+.ipynb_checkpoints/
+
+# Big downloads and scratch
+*.zip
+test_save.parquet
+
+# Raw data: Veraset and SafeGraph are licensed and huge (symlinked from the week 6 folder).
+# Keep only the small inputs needed to rebuild: WSLCB snapshots and the census caches
+raw-data/*
+!raw-data/*.xls
+!raw-data/census/
+raw-data/census/*
+!raw-data/census/p12_blocks_2020.parquet
+!raw-data/census/wslcb_census_geocoder.csv
+!raw-data/census/wslcb_nominatim.json
+
+# Processed data: keep store-level and aggregate tables, leave out device-level
+# tables (licensed microdata, and most are GBs). Rebuild those with the tools/ scripts
+processed-data/*
+!processed-data/1*.parquet
+!processed-data/3*.parquet
+!processed-data/4ci_*.parquet
+!processed-data/4cii_*.parquet
+!processed-data/4ciii_*.parquet
+!processed-data/5a_*.parquet
+!processed-data/5b_*.parquet
+!processed-data/5d_*.parquet
+!processed-data/6*.parquet
+!processed-data/cbg2010_place_shares.parquet

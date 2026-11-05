@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Step 1 Store Review</title>
+<style>
+:root {
+  --bg: #f6f5f2; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a66; --line: #e3e1db; --soft: #efede8;
+  --accent: #2f5d50; --accent-ink: #ffffff; --good: #2e7d4f; --bad: #b3361f; --warn: #a86a00; --hi: #fff4d6; --hi-ink: #5c4300;
+  --chip: #eef1ee; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161615; --panel: #1f1f1d; --ink: #ecebe6; --muted: #a09e97; --line: #34332f; --soft: #272724;
+    --accent: #7fb8a4; --accent-ink: #10201b; --good: #6cc48f; --bad: #f08a72; --warn: #e2b04a; --hi: #3a3220; --hi-ink: #f3dca0; --chip: #2a2e2b;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161615; --panel: #1f1f1d; --ink: #ecebe6; --muted: #a09e97; --line: #34332f; --soft: #272724;
+  --accent: #7fb8a4; --accent-ink: #10201b; --good: #6cc48f; --bad: #f08a72; --warn: #e2b04a; --hi: #3a3220; --hi-ink: #f3dca0; --chip: #2a2e2b;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--accent); }
+button { font: inherit; color: inherit; cursor: pointer; }
+header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; }
+header h1 { font-size: 15px; margin: 0; font-weight: 650; }
+.tabs { display: flex; gap: 4px; }
+.tabs button { border: 1px solid var(--line); background: var(--soft); padding: 4px 10px; border-radius: 6px; }
+.tabs button.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.progress { color: var(--muted); font-size: 13px; }
+.spacer { flex: 1; }
+.tool { border: 1px solid var(--line); background: var(--panel); padding: 4px 10px; border-radius: 6px; }
+.layout { display: grid; grid-template-columns: 320px 1fr; min-height: calc(100vh - 52px); }
+aside { border-right: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; max-height: calc(100vh - 52px); position: sticky; top: 52px; }
+.filters { padding: 10px; display: grid; gap: 6px; border-bottom: 1px solid var(--line); }
+.filters input, .filters select { width: 100%; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); font: inherit; }
+.list { overflow-y: auto; flex: 1; }
+.row { display: grid; grid-template-columns: 34px 1fr 12px; gap: 6px; padding: 7px 10px; border-bottom: 1px solid var(--soft); cursor: pointer; align-items: start; }
+.row:hover { background: var(--soft); }
+.row.cur { background: var(--hi); color: var(--hi-ink); }
+.row .sc { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.row .t { font-size: 13px; overflow: hidden; }
+.row .t b { font-weight: 600; }
+.row .t span { color: var(--muted); }
+.dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; border: 1px solid var(--line); }
+.dot.correct, .dot.match { background: var(--good); border-color: var(--good); }
+.dot.wrong, .dot.none { background: var(--bad); border-color: var(--bad); }
+.dot.unsure { background: var(--warn); border-color: var(--warn); }
+main { padding: 16px 20px 120px; max-width: 1150px; width: 100%; }
+.top { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; margin-bottom: 8px; }
+.top h2 { margin: 0; font-size: 18px; }
+.top .meta { color: var(--muted); }
+.flags { display: grid; gap: 4px; margin: 8px 0 14px; }
+.flag { display: flex; gap: 8px; align-items: baseline; padding: 6px 10px; border-radius: 6px; background: var(--soft); border-left: 4px solid var(--line); }
+.flag.w3, .flag.w4, .flag.w5 { border-left-color: var(--bad); }
+.flag.w2 { border-left-color: var(--warn); }
+.flag.w1 { border-left-color: var(--accent); }
+.flag b { white-space: nowrap; }
+.flag span { color: var(--muted); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; min-width: 0; }
+.card h3 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
+.big { font-size: 17px; font-weight: 650; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; margin: 8px 0 0; }
+dt { color: var(--muted); }
+dd { margin: 0; overflow-wrap: anywhere; }
+.mono { font-family: var(--mono); font-size: 12px; }
+.links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.links a { border: 1px solid var(--line); background: var(--panel); padding: 4px 10px; border-radius: 6px; text-decoration: none; }
+.tw { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--soft); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; }
+tr.can td { background: var(--hi); color: var(--hi-ink); }
+tr.self td { font-weight: 650; }
+.tag { display: inline-block; padding: 0 6px; border-radius: 4px; background: var(--chip); font-size: 12px; margin-right: 4px; }
+.empty { color: var(--muted); font-style: italic; }
+.verdict { position: fixed; bottom: 0; left: 320px; right: 0; background: var(--panel); border-top: 1px solid var(--line); padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; z-index: 4; }
+.verdict button.v { border: 1px solid var(--line); background: var(--soft); padding: 6px 14px; border-radius: 6px; font-weight: 600; }
+.verdict button.v.correct.on, .verdict button.v.match.on { background: var(--good); border-color: var(--good); color: #fff; }
+.verdict button.v.wrong.on, .verdict button.v.none.on { background: var(--bad); border-color: var(--bad); color: #fff; }
+.verdict button.v.unsure.on { background: var(--warn); border-color: var(--warn); color: #fff; }
+.verdict input { flex: 1; min-width: 180px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); font: inherit; }
+.kbd { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.pick { border: 1px solid var(--line); background: var(--soft); border-radius: 4px; padding: 0 6px; font-size: 12px; }
+.pick.on { background: var(--good); color: #fff; border-color: var(--good); }
+.help { color: var(--muted); font-size: 12px; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  aside { position: static; max-height: 260px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .cols { grid-template-columns: 1fr; }
+  .verdict { left: 0; padding: 8px 16px; }
+  main { padding: 12px 16px 150px; }
+}
+</style>
+<style>
+.grid { display: grid; grid-template-columns: 48px repeat(12, minmax(0, 1fr)); gap: 3px; font-size: 11px; }
+.grid .yr { color: var(--muted); font-family: var(--mono); align-self: center; }
+.grid .mh { color: var(--muted); text-align: center; }
+.cell { border-radius: 4px; padding: 3px 2px; text-align: center; font-family: var(--mono); background: var(--soft); color: var(--muted); min-height: 22px; overflow: hidden; }
+.cell.op { background: var(--good); color: #fff; }
+.cell.off { background: var(--warn); color: #fff; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+tr.here td { font-weight: 650; }
+tr.appr td:first-child::before { content: "✓ "; color: var(--good); }
+.dot.yes { background: var(--good); border-color: var(--good); }
+.dot.no { background: var(--bad); border-color: var(--bad); }
+.verdict button.v.yes.on { background: var(--good); border-color: var(--good); color: #fff; }
+.verdict button.v.no.on { background: var(--bad); border-color: var(--bad); color: #fff; }
+.question { font-size: 13px; color: var(--muted); margin: -2px 0 10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Step 1 · Is this the store?</h1>
+  <div class="progress" id="progress"></div>
+  <div class="spacer"></div>
+  <button class="tool" id="export">Export verdicts CSV</button>
+  <label class="tool" style="cursor:pointer">Import CSV<input type="file" id="import" accept=".csv" hidden></label>
+</header>
+<div class="layout">
+  <aside>
+    <div class="filters">
+      <input id="q" placeholder="Search name, address, tradename, place ID  ( / )">
+      <select id="fv">
+        <option value="all">All verdicts</option><option value="todo">Not reviewed yet</option>
+        <option value="yes">Yes, it's the store</option><option value="no">No</option><option value="unsure">Unsure</option>
+      </select>
+      <select id="ff"><option value="">Any reason</option></select>
+    </div>
+    <div class="list" id="list"></div>
+  </aside>
+  <main id="main"></main>
+</div>
+<div class="verdict" id="verdict"></div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const DATA = JSON.parse(document.getElementById("data").textContent);
+const STORE = "rtc-step1e-review-v1";
+let V = {};
+try { V = JSON.parse(localStorage.getItem(STORE) || "{}") || {}; } catch (e) { V = {}; }
+function save() { try { localStorage.setItem(STORE, JSON.stringify(V)); } catch (e) {} }
+
+let cur = 0, view = [];
+const esc = s => s == null ? "" : String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $ = id => document.getElementById(id);
+const fmtN = n => n == null ? "" : Number(n).toLocaleString();
+const title = s => s == null ? "" : String(s).toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function buildFilter() {
+  const counts = {};
+  DATA.items.forEach(it => it.flags.forEach(f => { counts[f.tag] = (counts[f.tag] || 0) + 1; }));
+  $("ff").innerHTML = '<option value="">Any reason</option>' + Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<option value="${esc(k)}">${esc(k)} (${n})</option>`).join("");
+}
+
+function matchesFilter(it) {
+  const q = $("q").value.trim().toLowerCase(), fv = $("fv").value, ff = $("ff").value, v = V[it.id];
+  if (fv === "todo" && v && v.v) return false;
+  if (["yes", "no", "unsure"].includes(fv) && !(v && v.v === fv)) return false;
+  if (ff && !it.flags.some(f => f.tag === ff)) return false;
+  if (q) {
+    const hay = [it.name, it.v_addr, it.v_city, (it.tradenames || []).join(" "), it.wslcb_addr, it.store_city, it.sgid, it.placekey].join(" ").toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  return true;
+}
+
+function renderList() {
+  const curId = view[cur] != null ? DATA.items[view[cur]].id : null;
+  view = DATA.items.map((it, i) => i).filter(i => matchesFilter(DATA.items[i]));
+  const ni = curId ? view.findIndex(i => DATA.items[i].id === curId) : -1;
+  cur = ni >= 0 ? ni : Math.min(cur, Math.max(0, view.length - 1));
+  $("list").innerHTML = view.map((i, k) => {
+    const it = DATA.items[i], v = V[it.id];
+    return `<div class="row ${k === cur ? "cur" : ""}" data-k="${k}"><div class="sc">${fmtN(it.visits)}</div><div class="t"><b>${esc((it.tradenames || [])[0])}</b><br>${esc(it.name)} <span>· ${esc(it.v_addr)}</span></div><div class="dot ${v && v.v ? v.v : ""}"></div></div>`;
+  }).join("") || '<div class="row"><div></div><div class="empty">Nothing matches these filters</div></div>';
+  const done = DATA.items.filter(it => V[it.id] && V[it.id].v).length;
+  const yes = DATA.items.filter(it => V[it.id] && V[it.id].v === "yes").length, no = DATA.items.filter(it => V[it.id] && V[it.id].v === "no").length;
+  $("progress").textContent = `${done} of ${DATA.items.length} reviewed · ${yes} yes · ${no} no · showing ${view.length}`;
+}
+
+function grid(it) {
+  const years = [...new Set(it.grid.map(g => g[0].slice(0, 4)))];
+  let h = '<div class="grid"><div></div>' + MON.map(m => `<div class="mh">${m}</div>`).join("");
+  years.forEach(y => {
+    h += `<div class="yr">${y}</div>`;
+    for (let m = 1; m <= 12; m++) {
+      const g = it.grid.find(x => x[0] === `${y}-${String(m).padStart(2, "0")}`);
+      if (!g || g[1] == null) h += '<div class="cell">·</div>';
+      else h += `<div class="cell ${g[2] ? "op" : "off"}" title="${g[0]}: ${g[1]} visits">${fmtN(g[1])}</div>`;
+    }
+  });
+  return h + '</div><div class="legend"><span><i style="background:var(--good)"></i>label seen, WSLCB license operating (these visits would count)</span><span><i style="background:var(--warn)"></i>label seen, no license operating</span><span><i style="background:var(--soft)"></i>not seen under this name</span></div>';
+}
+
+function wslcbCard(it) {
+  const lic = it.licenses.map(l => {
+    const snaps = l.snapshots.map(s => `<tr class="${s.here ? "here" : ""}"><td class="mono">${esc(s.date)}</td><td>${esc(s.tradename)}</td><td>${esc(s.status)}</td><td>${esc(s.addr)}, ${esc(s.city)}</td></tr>`).join("");
+    return `<div style="margin-top:8px"><span class="tag mono">${esc(l.license)}</span> ${(l.tradenames || []).map(esc).join(" · ")}
+      <span class="help">${l.first_op ? `operating here ${esc(l.first_op)} → ${esc(l.last_op)}` : "no dated operating sample here"}${(l.current || []).length ? ` · current list: ${l.current.map(esc).join(", ")}` : ""}</span>
+      <details><summary class="help">${l.snapshots.length} sample rows (bold = this address)</summary><div class="tw"><table><tr><th>Sample</th><th>Tradename</th><th>Status</th><th>Address</th></tr>${snaps}</table></div></details></div>`;
+  }).join("");
+  return `<div class="card"><h3>WSLCB storefront</h3>
+    <div class="big">${(it.tradenames || []).map(esc).join(" · ")}</div>
+    <dl><dt>Address</dt><dd>${esc(it.wslcb_addr)}, ${esc(title(it.store_city))} ${esc(it.zip || "")}</dd>
+    <dt>Normalized</dt><dd class="mono">${esc(it.store_addr)} · ${esc(it.store_city)}</dd></dl>
+    ${lic}</div>`;
+}
+
+function placeCard(it) {
+  return `<div class="card"><h3>Veraset place</h3>
+    <div class="big">${esc(it.name)}</div>
+    <dl><dt>Address</dt><dd>${esc(it.v_addr)}, ${esc(it.v_city)} <span class="tag">${esc({exact: "exact address", same_address_and_zip: "same address + zip, city named differently", different_address: "different address"}[it.address_match] || it.address_match)}</span></dd>
+    <dt>NAICS</dt><dd class="mono">${esc(it.naics)}</dd>
+    <dt>Place ID</dt><dd class="mono">${esc(it.sgid)}</dd>
+    <dt>Placekey</dt><dd class="mono">${esc(it.placekey || "none")}</dd>
+    <dt>Name rule</dt><dd><span class="tag">${esc(it.name_rule)}</span>${it.overlap != null ? `<span class="tag">tradename overlap ${Math.round(it.overlap * 100)}%</span>` : ""}</dd>
+    <dt>Outline</dt><dd><span class="tag">${esc(it.outline || "?")}</span><span class="help">${esc(it.outline_status || "")}</span>${it.outline_others.length ? `<div class="help">shared with: ${it.outline_others.slice(0, 12).map(esc).join(" · ")}${it.outline_others.length > 12 ? ` … and ${it.outline_others.length - 12} more` : ""}</div>` : ""}${it.parent ? `<div class="help">inside parent ${esc(it.parent)}</div>` : ""}</dd>
+    <dt>Visits</dt><dd>${fmtN(it.visits)} while a license was operating <span class="help">(${fmtN(it.visits_all)} in all, ${it.months_operating} of ${it.months_seen} months)</span></dd></dl></div>`;
+}
+
+function renderItem(it) {
+  const hist = it.history.length ? `<div class="tw"><table><tr><th>Months</th><th>Name</th><th>Address</th><th>Visits</th></tr>${it.history.map(h =>
+      `<tr class="${h.name === it.name ? "here" : ""}"><td class="mono">${esc(h.from)}${h.to !== h.from ? " → " + esc(h.to) : ""} <span class="help">(${h.months})</span></td><td>${esc(h.name)}</td><td>${esc(h.addr)}, ${esc(h.city)}</td><td>${fmtN(h.visits)}</td></tr>`).join("")}</table></div>`
+      : '<div class="empty">No history</div>';
+  const oth = it.others.length ? `<div class="tw"><table><tr><th>Name</th><th>Months</th><th>Visits</th><th></th></tr>${it.others.map(o =>
+      `<tr class="${o.approved ? "appr" : ""}"><td>${esc(o.name)}</td><td class="mono">${esc(o.from)} → ${esc(o.to)}</td><td>${fmtN(o.visits)}</td><td><span class="tag">${esc(o.check)}</span>${o.outline ? `<span class="tag">outline ${esc(o.outline)}</span>` : ""}</td></tr>`).join("")}</table></div>
+      ${it.num_others > it.others.length ? `<div class="help">…and ${it.num_others - it.others.length} more</div>` : ""}`
+      : '<div class="empty">Nothing else in Veraset at the exact WSLCB address</div>';
+  return `
+  <div class="top"><h2>${esc((it.tradenames || [])[0])} ← ${esc(it.name)}</h2><div class="meta">#${cur + 1} of ${view.length}</div></div>
+  <div class="question">Are visits to “${esc(it.name)}” at ${esc(it.v_addr)} visits to this cannabis store? Yes applies to every month this place goes by this name.</div>
+  <div class="flags">${it.flags.map(f => `<div class="flag w${f.w}"><b>${esc(f.tag)}</b><span>${esc(f.why)}</span></div>`).join("")}</div>
+  <div class="links"><a href="${esc(it.links.wslcb)}" target="_blank" rel="noopener">Maps: WSLCB address ↗</a><a href="${esc(it.links.poi)}" target="_blank" rel="noopener">Maps: Veraset name + address ↗</a><a href="${esc(it.links.search)}" target="_blank" rel="noopener">Search: tradename + city ↗</a></div>
+  <div class="cols">${wslcbCard(it)}${placeCard(it)}</div>
+  <div class="card"><h3>Months under this name</h3>${grid(it)}</div>
+  <div class="card"><h3>Everything this place ID has been called</h3>${hist}</div>
+  <div class="card"><h3>Other places Veraset has at the WSLCB address (✓ = already approved)</h3>${oth}</div>`;
+}
+
+function renderVerdict(it) {
+  const v = V[it.id] || {};
+  const opts = [["yes", "✓ Yes, it's the store", 1], ["no", "✗ No", 2], ["unsure", "? Unsure", 3]];
+  $("verdict").innerHTML = `<button class="tool" id="prev">← Prev</button>` +
+    opts.map(([k, l, n]) => `<button class="v ${k} ${v.v === k ? "on" : ""}" data-v="${k}">${l} <span class="kbd">${n}</span></button>`).join("") +
+    `<input id="note" placeholder="Note (what it really is, …)" value="${esc(v.note || "")}">` +
+    `<button class="tool" id="next">Next →</button><button class="tool" id="nexttodo" title="n">Next unreviewed</button>`;
+}
+
+function render() {
+  renderList();
+  if (!view.length) { $("main").innerHTML = '<p class="empty">Nothing to show.</p>'; $("verdict").innerHTML = ""; return; }
+  const it = DATA.items[view[cur]];
+  $("main").innerHTML = renderItem(it);
+  renderVerdict(it);
+  const r = document.querySelector(".row.cur"); if (r) r.scrollIntoView({block: "nearest"});
+}
+
+function setVerdict(val) {
+  const it = DATA.items[view[cur]]; if (!it) return;
+  const prev = V[it.id] || {};
+  const note = $("note") ? $("note").value : prev.note || "";
+  if (prev.v === val) { if (note) V[it.id] = {note}; else delete V[it.id]; }
+  else V[it.id] = {v: val, note, t: new Date().toISOString()};
+  save(); render();
+}
+function go(k) { if (!view.length) return; cur = Math.max(0, Math.min(view.length - 1, k)); render(); window.scrollTo(0, 0); }
+function nextTodo() { for (let k = 1; k <= view.length; k++) { const j = (cur + k) % view.length; const v = V[DATA.items[view[j]].id]; if (!v || !v.v) return go(j); } }
+
+document.addEventListener("click", e => {
+  const row = e.target.closest(".row[data-k]"); if (row) return go(+row.dataset.k);
+  const vb = e.target.closest("button[data-v]"); if (vb) return setVerdict(vb.dataset.v);
+  if (e.target.id === "prev") go(cur - 1);
+  if (e.target.id === "next") go(cur + 1);
+  if (e.target.id === "nexttodo") nextTodo();
+});
+document.addEventListener("change", e => {
+  if (e.target.id === "note") { const it = DATA.items[view[cur]]; const p = V[it.id] || {}; p.note = e.target.value; if (!p.v && !p.note) delete V[it.id]; else V[it.id] = p; save(); renderList(); }
+});
+document.addEventListener("keydown", e => {
+  const typing = ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName);
+  if (typing) { if (e.key === "Escape" || (e.key === "Enter" && document.activeElement.id === "note")) { document.activeElement.dispatchEvent(new Event("change", {bubbles: true})); document.activeElement.blur(); } return; }
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === "ArrowRight" || e.key === "j") go(cur + 1);
+  else if (e.key === "ArrowLeft" || e.key === "k") go(cur - 1);
+  else if (["1", "2", "3"].includes(e.key)) setVerdict(["yes", "no", "unsure"][+e.key - 1]);
+  else if (e.key === "n") nextTodo();
+  else if (e.key === "/") { e.preventDefault(); $("q").focus(); }
+});
+["q", "fv", "ff"].forEach(id => $(id).addEventListener("input", () => { cur = 0; view = []; render(); }));
+
+// CSV export / import. The notebook reads safegraph_place_id, location_name, street_address_norm, city_norm, verdict
+function csvCell(x) { x = x == null ? "" : String(x); return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; }
+$("export").onclick = () => {
+  const rows = [["id", "safegraph_place_id", "location_name", "street_address_norm", "city_norm", "verdict", "note", "reviewed_at", "veraset_address", "tradenames", "visits_while_operating"]];
+  DATA.items.forEach(it => { const v = V[it.id]; if (v) rows.push([it.id, it.sgid, it.name, it.store_addr, it.store_city, v.v || "", v.note || "", v.t || "", `${it.v_addr}, ${it.v_city}`, (it.tradenames || []).join(" | "), it.visits]); });
+  const blob = new Blob([rows.map(r => r.map(csvCell).join(",")).join("\n")], {type: "text/csv"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "1e_review_verdicts.csv"; a.click();
+};
+function parseCSV(t) {
+  const out = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (q) { if (c === '"' && t[i + 1] === '"') { cell += '"'; i++; } else if (c === '"') q = false; else cell += c; }
+    else if (c === '"') q = true; else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") { if (c === "\r" && t[i + 1] === "\n") i++; row.push(cell); out.push(row); row = []; cell = ""; }
+    else cell += c;
+  }
+  if (cell || row.length) { row.push(cell); out.push(row); }
+  return out;
+}
+$("import").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  f.text().then(t => {
+    const rows = parseCSV(t), h = rows.shift(), ix = k => h.indexOf(k); let n = 0;
+    rows.forEach(r => { const id = r[ix("id")]; if (!id) return; V[id] = {v: r[ix("verdict")] || undefined, note: r[ix("note")] || "", t: r[ix("reviewed_at")] || ""}; n++; });
+    save(); render(); alert(`Imported ${n} verdicts`);
+  });
+  e.target.value = "";
+};
+
+buildFilter();
+render();
+</script>
+</body>
+</html>
