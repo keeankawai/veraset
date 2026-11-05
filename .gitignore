@@ -52,3 +52,9 @@ Keean Kawai [[]Veraset[]] Task 1.pdf
 # Notebook generator scripts: the step*_ notebooks are the source of record
 tools/make_step*.py
 tools/step2_cells.py
+
+# Local-only scripts and notes (kept on disk, not shared)
+dewey_check.py
+data_loading_processing_week_6.ipynb
+data_loading_processing_week_7.ipynb
+step1_future_fixes.md
