@@ -10,7 +10,7 @@ snap = pl.read_parquet("processed-data/1a_wslcb_snapshots_long.parquet")
 loc = pl.read_parquet("processed-data/1a_wslcb_locations.parquet")
 vpm = pl.read_parquet("processed-data/veraset_poi_months.parquet")
 
-nb_cells = ["".join(c["source"]) for c in json.load(open("wslcb_safegraph_locations_processing.ipynb"))["cells"] if c["cell_type"] == "code"]
+nb_cells = ["".join(c["source"]) for c in json.load(open("Task 1/step2_wslcb_safegraph_locations_processing.ipynb"))["cells"] if c["cell_type"] == "code"]
 nb_src = next(c for c in nb_cells if "def normalize_address" in c)
 exec(nb_src)  # normalize_text / normalize_address, so the WSLCB rows can be tied back to storefronts the same way as the notebook
 

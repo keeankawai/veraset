@@ -36,3 +36,19 @@ processed-data/*
 !processed-data/5d_*.parquet
 !processed-data/6*.parquet
 !processed-data/cbg2010_place_shares.parquet
+# Task 2: the counts and summary tables (the device-level flag tables stay local)
+!processed-data/7aii_*.parquet
+!processed-data/7bii_*.parquet
+!processed-data/7cii_*.parquet
+!processed-data/7d_flag_counts.parquet
+!processed-data/7e*.parquet
+!processed-data/8bii_*.parquet
+!processed-data/8d_*.parquet
+
+# Task 1 reports to compare (local reference only)
+[[]Henry[]] Task 1_ Veraset Analysis.pdf
+Keean Kawai [[]Veraset[]] Task 1.pdf
+
+# Notebook generator scripts: the step*_ notebooks are the source of record
+tools/make_step*.py
+tools/step2_cells.py
