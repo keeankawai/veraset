@@ -1,0 +1,138 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Matched vs. unmatched storefronts (all 542)</title><style>body{font-family:Georgia,serif;margin:24px;color:#222} table{border-collapse:collapse;font-size:14px} th,td{padding:4px 12px;text-align:right;border:none} th{border-bottom:1px solid #222} td:first-child,th:first-child{text-align:left} tr:last-child td{border-bottom:1px solid #222} caption{caption-side:top;text-align:left;font-weight:bold;padding-bottom:8px} p{font-size:12px;max-width:900px}</style></head><body><table><caption>Matched vs. unmatched storefronts (all 542)</caption>
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Matched: mean (SD)</th>
+      <th>Matched: median</th>
+      <th>Unmatched: mean (SD)</th>
+      <th>Unmatched: median</th>
+      <th>Difference</th>
+      <th>p (t-test)</th>
+      <th>p (rank-sum)</th>
+      <th>N (matched / unmatched)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Average monthly sales, 2019-2021 ($)</td>
+      <td>253,053 (216,724)</td>
+      <td>198,712</td>
+      <td>53,315 (100,173)</td>
+      <td>888</td>
+      <td>199,738</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>427 / 115</td>
+    </tr>
+    <tr>
+      <td>log (1 + average monthly sales)</td>
+      <td>12.04 (1.15)</td>
+      <td>12.20</td>
+      <td>5.77 (5.37)</td>
+      <td>6.79</td>
+      <td>6.27</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>427 / 115</td>
+    </tr>
+    <tr>
+      <td>Opening year (first month with sales)</td>
+      <td>2016.2 (1.6)</td>
+      <td>2016</td>
+      <td>2017.7 (1.8)</td>
+      <td>2018</td>
+      <td>-1.5</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>426 / 73</td>
+    </tr>
+    <tr>
+      <td>Opening duration (months open, 2019-2021, of 36)</td>
+      <td>34.7 (4.3)</td>
+      <td>36.0</td>
+      <td>25.3 (10.2)</td>
+      <td>24.0</td>
+      <td>9.4</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>427 / 115</td>
+    </tr>
+    <tr>
+      <td>Share open <= 12 months</td>
+      <td>0.01 (0.12)</td>
+      <td></td>
+      <td>0.24 (0.43)</td>
+      <td></td>
+      <td>-0.23</td>
+      <td>0.000</td>
+      <td></td>
+      <td>427 / 115</td>
+    </tr>
+    <tr>
+      <td>Share open 13-24 months</td>
+      <td>0.06 (0.23)</td>
+      <td></td>
+      <td>0.29 (0.45)</td>
+      <td></td>
+      <td>-0.23</td>
+      <td>0.000</td>
+      <td></td>
+      <td>427 / 115</td>
+    </tr>
+    <tr>
+      <td>Share open > 24 months</td>
+      <td>0.93 (0.26)</td>
+      <td></td>
+      <td>0.47 (0.50)</td>
+      <td></td>
+      <td>0.46</td>
+      <td>0.000</td>
+      <td></td>
+      <td>427 / 115</td>
+    </tr>
+    <tr>
+      <td>Neighboring businesses within 150 m</td>
+      <td>39.6 (44.6)</td>
+      <td>24.0</td>
+      <td>41.0 (67.1)</td>
+      <td>26.0</td>
+      <td>-1.4</td>
+      <td>0.832</td>
+      <td>0.424</td>
+      <td>427 / 115</td>
+    </tr>
+    <tr>
+      <td>Neighboring businesses within 50 m</td>
+      <td>6.8 (10.8)</td>
+      <td>4.0</td>
+      <td>5.7 (9.0)</td>
+      <td>3.0</td>
+      <td>1.1</td>
+      <td>0.262</td>
+      <td>0.021</td>
+      <td>427 / 115</td>
+    </tr>
+    <tr>
+      <td>log population per sq. mile in the place</td>
+      <td>7.88 (0.89)</td>
+      <td>8.09</td>
+      <td>7.73 (1.13)</td>
+      <td>8.04</td>
+      <td>0.15</td>
+      <td>0.227</td>
+      <td>0.574</td>
+      <td>367 / 99</td>
+    </tr>
+    <tr>
+      <td>Urban share of the place</td>
+      <td>0.91 (0.28)</td>
+      <td>1.00</td>
+      <td>0.79 (0.40)</td>
+      <td>1.00</td>
+      <td>0.11</td>
+      <td>0.011</td>
+      <td>0.469</td>
+      <td>367 / 99</td>
+    </tr>
+  </tbody>
+</table><p>Storefronts are WSLCB addresses with a license operating in some month of 2019-2021; matched = an approved Veraset label in some open month. Sales: mean monthly net sales over the storefront's open months in 2019-2021 (months with no sales record = 0). Opening year: year of the first month with positive retail sales (LCB archive from Jul 2014, store history file from 2018). Opening duration: months open in 2019-2021 by the dated WSLCB samples. Neighboring businesses: SafeGraph POIs (current snapshot). Place density and urban share: the storefront's census place (2020 Census); storefronts outside any place are left out of those rows. p-values: Welch t-test (chi-square-equivalent for shares) and Mann-Whitney rank-sum. All 542 storefronts; opening year is missing for the 43 with no sales record at all.</p></body></html>

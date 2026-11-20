@@ -16,6 +16,8 @@ The notebooks in `Task 1/` and `Task 2/` are numbered in the order they have to 
 | 6 | `Task 1/step6_store_coverage_processing.ipynb` | [6a]/[6b] storefront coverage, bar charts and maps (needs only `step1_` and `step2_`) |
 | 7 | `Task 2/step7_device_flags_processing.ipynb` | Task 2, yearly sample only: [7a] retail worker, [7b] delivery/wholesale worker, [7c] high-frequency flags, [7d] device-quarter flags, [7e] visit summaries before/after exclusions. Charts go to `Task 2/Charts and Figures/` (needs `step4_`) |
 | 8 | `Task 2/step8_device_activity_processing.ipynb` | Task 2, yearly sample, all Veraset visits (cleaned like [4bi]): [8a] total/home/non-home visits per device, [8bi]/[8bii] gaps between visits (within day start-to-start and end-to-start, across days), [8c] activity stability (daily/weekly visits and 1/gap), [8d] sample-level distributions. About 1.5 minutes, 9 GB of memory |
+| 9 | `Task 2/step9_matched_vs_unmatched_processing.ipynb` | Task 2 balancedness: [9a] store history file check, [9b] places by match rate, [9c] matched vs. unmatched storefronts and storefront-months (needs `step2_`, `step6_`) |
+| 10 | `Task 2/step10_task2_revisions_processing.ipynb` | Task 2 revisions on [9c], storefronts with sales only: [10a] balance table, [10b]/[10c] share of storefronts and storefront-months matched by opening year and by opening duration, [10d] eight LPMs of matched. Tables and charts go to `Task 2/Charts and Figures/` (needs `step9_`) |
 
 ```bash
 python3 tools/run_nb.py "Task 1/step1_geography_helpers_processing.ipynb"
@@ -26,6 +28,8 @@ python3 tools/run_nb.py "Task 1/step5_visits_and_access_processing.ipynb"
 python3 tools/run_nb.py "Task 1/step6_store_coverage_processing.ipynb"
 python3 tools/run_nb.py "Task 2/step7_device_flags_processing.ipynb"
 python3 tools/run_nb.py "Task 2/step8_device_activity_processing.ipynb"
+python3 tools/run_nb.py "Task 2/step9_matched_vs_unmatched_processing.ipynb"
+python3 tools/run_nb.py "Task 2/step10_task2_revisions_processing.ipynb"
 python3 tools/build_writeup.py
 ```
 

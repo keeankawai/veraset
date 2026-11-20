@@ -44,6 +44,8 @@ processed-data/*
 !processed-data/7e*.parquet
 !processed-data/8bii_*.parquet
 !processed-data/8d_*.parquet
+# Task 2 revisions: the balance, match-share, and regression tables
+!processed-data/10*.parquet
 
 # Task 1 reports to compare (local reference only)
 [[]Henry[]] Task 1_ Veraset Analysis.pdf
